@@ -1,0 +1,37 @@
+ErrorDocument 404 /socloud/not-found.php
+ErrorDocument 403 /socloud/not-found.php
+
+<Files "db-util.php">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "func.php">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "must-head.php">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "must-header.php">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "must-footer.php">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "var.php">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "cnames.php">
+Order Allow,Deny
+Deny from all
+</Files>

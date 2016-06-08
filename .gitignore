@@ -45,3 +45,13 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Chock files
+*.beautified.css
+*.min.css
+*.beautified.js
+*.min.js
+_notes/
+bootstrap/
+Publish/
+Trash/
