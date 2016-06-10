@@ -10,6 +10,10 @@ License
 
 This project is under MPL 2.0.
 
+TODOs
+-----
+
+ - Must generate the "*.min.js" and "*.min.css" files from "*.js" and "*.css" respectively.
 
 Author
 ------

@@ -16,60 +16,70 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $infO = "OnlineEntry";  
         $proN =validateInput(isset($_POST['word']) ? $_POST['word'] : '');
         $worD = clean($proN);
-        $poS =validateInput( isset($_POST['pos']) ? $_POST['pos'] : '');
-        $meaninG = validateInput(isset($_POST['meaning']) ? $_POST['meaning'] : '');
+        //$poS =validateInput( isset($_POST['pos']) ? $_POST['pos'] : '');
+        $meaninG = isset($_POST['meaning']) ? $_POST['meaning'] : NULL;
         $synonymS =validateInput( isset($_POST['synonyms']) ? $_POST['synonyms'] : '');
+        $antonymS =validateInput( isset($_POST['antonyms']) ? $_POST['antonyms'] : '');
 
-        $db = new db_util();
 
-//check if the value already exist or not
-        $sql = "SELECT * FROM ovidhan WHERE word= '$worD'";
-        $result = $db->query($sql);
+        echo $proN,"\n";
+        echo $worD,"\n";
 
-        if($result->num_rows == 0)
-        {
-            $stmt = $db->prepare("INSERT INTO ovidhan(info,word,pron,pos,meaning,synonyms, creator_id )
-                VALUES(?,?,?,?,?,?,?)");
+        echo var_dump($meaninG),"\n";
 
-            $stmt->bind_param("ssssssi", $_infO, $_worD, $_proN, $_poS, $_meaninG, $_synonymS, $_userId);
+        echo $synonymS,"\n";
+        echo $antonymS;
 
-            $_infO = $infO;
-            $_worD = $worD;
-            $_proN = $proN;
-            $_poS = $poS;
-            $_meaninG = $meaninG;
-            $_synonymS = $synonymS;
-            $_userId = $userId;
+//         $db = new db_util();
 
-            $result = $stmt->execute();
+//         //check if the value already exist or not
+//         $sql = "SELECT * FROM ovidhan WHERE word= '$worD'";
+//         $result = $db->query($sql);
 
-            if($result===true)
-            {
+//         if($result->num_rows == 0)
+//         {
+//             $stmt = $db->prepare("INSERT INTO ovidhan(info,word,pron,pos,meaning,synonyms, creator_id )
+//                 VALUES(?,?,?,?,?,?,?)");
 
-                $GLOBALS['_title'] = "সফল!";
-                $GLOBALS['_message'] = 'নতুন অন্তর্ভুক্তি "'.$proN.'" সফলভাবে যুক্ত হয়েছে! :)';
+//             $stmt->bind_param("ssssssi", $_infO, $_worD, $_proN, $_poS, $_meaninG, $_synonymS, $_userId);
+
+//             $_infO = $infO;
+//             $_worD = $worD;
+//             $_proN = $proN;
+//             $_poS = $poS;
+//             $_meaninG = $meaninG;
+//             $_synonymS = $synonymS;
+//             $_userId = $userId;
+
+//             $result = $stmt->execute();
+
+//             if($result===true)
+//             {
+
+//                 $GLOBALS['_title'] = "সফল!";
+//                 $GLOBALS['_message'] = 'নতুন অন্তর্ভুক্তি "'.$proN.'" সফলভাবে যুক্ত হয়েছে! :)';
                 
-            }
-            else
-            {
+//             }
+//             else
+//             {
 
-//             displayNewEntryForm();
+// //             displayNewEntryForm();
 
-                $GLOBALS['_title'] = "ত্রুটি!";
-                $GLOBALS['_message'] = 'অন্তর্ভুক্তি যুক্ত করা যায়নি! :(';
-            }       
+//                 $GLOBALS['_title'] = "ত্রুটি!";
+//                 $GLOBALS['_message'] = 'অন্তর্ভুক্তি যুক্ত করা যায়নি! :(';
+//             }       
 
-            $stmt->close();
+//             $stmt->close();
 
 
-        }
-        else
-        {
+//         }
+//         else
+//         {
 
-            $GLOBALS['_title'] = "সতর্ক হোন!";
-            $GLOBALS['_message'] = 'শব্দ/শব্দ-গুচ্ছ "'.$proN.'" ডেটাবেজে ইতিমধ্যে যুক্ত করা আছে! :/';
+//             $GLOBALS['_title'] = "সতর্ক হোন!";
+//             $GLOBALS['_message'] = 'শব্দ/শব্দ-গুচ্ছ "'.$proN.'" ডেটাবেজে ইতিমধ্যে যুক্ত করা আছে! :/';
 
-        }
+//         }
 
 
     }
@@ -83,12 +93,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         include 'kickout.php';
     }
 
-    $data = array(
-                "title" => $_title,
-                "message" => $_message
-            );
+    // $data = array(
+    //             "title" => $_title,
+    //             "message" => $_message
+    //         );
 
-        echo json_encode($data);
+    //     echo json_encode($data);
 
     exit();
 
@@ -106,45 +116,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script type="text/javascript">
         $(document).ready(function(){
 
-            $("ul.capsule-ul").bind('keypress', function(e){
+            $("form").bind('keypress', function(e){
                 
                 var code = e.keyCode || e.which;
                 $targetEle = $(e.target);
 
-                if($targetEle.is("input#meaning"))
+                if($targetEle.is("input#synonyms"))
                 {
-                    $_now_element = "meaning";
-                    $now = "অর্থ";
+                    $_now_element = "synonyms";
+                    $_now_element_id = $_now_element;
+                    $now = "সমার্থক শব্দ";
+                }
+                else if($targetEle.is("input#antonyms"))
+                {
+                    $_now_element = "antonyms";
+                    $_now_element_id = $_now_element;
+                    $now = "বিপরীতার্থক শব্দ";
                 }
                 else
                 {
-                    $_now_element = "synonyms";
-                    $now = "সমার্থক শব্দ";
+                    $_now_element = "meaning";
+                    $_now_element_id = $targetEle.attr("id");
+                    $now = "অর্থ";
                 }
 
 
                 if(code == 186 || code == 59) { //";" keycode
-                    $val = $("input#"+$_now_element).val();
+                    $val = $targetEle.val();
+                    // console.log("val: "+$val);
+                    // console.log("attr: "+$_now_element_id);
                     if($val!="") {
-                        $('<li class="capsule" data-toggle="tooltip" title="'+$now+' মুছতে ক্লিক করুন">'+$val+'</li>').insertBefore("li."+$_now_element+"-li");
-                        $("input#"+$_now_element).val("");
+                        $('<li class="capsule" data-toggle="tooltip" title="'+$now+' মুছতে ক্লিক করুন">'+$val+'</li>').insertBefore($targetEle.parent());
+                        $targetEle.val("");
 
                         $('[data-toggle="tooltip"]').tooltip(); // as new element created, so init again..
 
                     }
                     return false;
                 }
+
                 if(code == 8) // delete keycode
                 {
-                    if($("input#"+$_now_element+", input#"+$_now_element).val()=="") {
-                        $prev_el = $("li."+$_now_element+"-li").prev();
-                        $("input#"+$_now_element).val($prev_el.text());
+                    //+", input#"+$_now_element
+                    if($targetEle.val()=="") {
+                        $prev_el = $targetEle.parent().prev();
+                        $targetEle.val($prev_el.text());
                         $prev_el.remove();
                         return false;
                     }
                 }
 
-                if($targetEle.is("input#synonyms"))
+                if($targetEle.is("input#synonyms, input#antonyms"))
                 {
                     if(code > 128) // check ASCII
                     {
@@ -160,8 +182,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 Dynamic Elements Event Handaling are done by
                 .on function.. :3
             */
-            $("ul.capsule-ul").on('click', 'li.capsule', function () {
-
+            $("form").on('click', 'li.capsule', function () {
                 $(this).tooltip('hide');
                 $(this).remove();
             });
@@ -202,38 +223,174 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             /*
                 Giving some design
             */
-            $("li input").focus(function(){
-                //$("ul.synonyms").addClass("input-focus");
+            /*
+                Dynamic Elements Event Handaling are done by
+                .on function.. :3
+            */
+            $("form").on('focus', 'li input', function () {
                 $(this).parentsUntil("div").not("input, li").addClass("input-focus");
             });
-            $("li input").blur(function(){
-                //$("ul.synonyms").removeClass("input-focus");
+            $("form").on('blur', 'li input', function () {
                 $(this).parentsUntil("div").not("input, li").removeClass("input-focus");
             });
-            $(".capsule-ul").click(function(){
+            $("form").on('click', '.capsule-ul', function () {
                 $(this).find("input").focus();
             });
 
+            /*
+                Get word
+            */
+            $("input.skip").click(function(){
+
+                $id = $("input.skip").attr("id");
+
+                $.post("_util/item_new_get.php", { item_index: $id },  
+                    function(result){  
+                        //console.log(result);
+                        if(result == 0){ 
+                            console.log("Error input.skip!");
+
+                        }else{
+                            $obj = jQuery.parseJSON(result);
+                            $('#word').val($obj.item);
+                            $("input.skip").attr("id", $obj.id);
+                        }
+                    });  
+                
+            });
+
+            function get_word()
+            {
+                $.post("_util/item_new_get.php",  
+                    function(result){  
+                        //console.log(result);
+                        if(result == 0){ 
+                            console.log("Error fn g_w!");
+                        }else{
+                            $obj = jQuery.parseJSON(result);
+                            $('#word').val($obj.item);
+                            $("input.skip").attr("id", $obj.id);
+                        }
+                    });  
+            }
+
+            get_word();
+
+            $("input.add-pos").click(function(){
+                $(this).before('<div id="meaning-0" class="form-group meaning"> \
+<label for="pos">পদপ্রকরণ</label> \
+<select class="form-control" id="opt-pos"> \
+<option value="0" selected="selected">Not defined</option> \
+<option value="n">Noun</option> \
+<option value="pro">Pronoun</option> \
+<option value="v">Verb</option> \
+<option value="adv">Adverb</option> \
+<option value="adj">Adjective</option> \
+<option value="pre">Preposition</option> \
+<option value="conj">Conjunction</option> \
+<option value="i">Phrase/Idioms</option> \
+</select>  \
+<label for="meaning">বাংলা অর্থ</label> \
+<ul class="form-control meaning inline capsule-ul" id="meaning-0"> \
+<li class="meaning-li"> \
+<input type="text" name="meaning" class="no-design capsule" id="meaning-0"> \
+</li> \
+</ul> \
+<input class="btn btn-primary" type="button" id="remove-pos" value="এ পদপ্রকরণটি বাদ দিন"> \
+</div>');
+            });
+
+            /*
+                Dynamic Elements Event Handaling are done by
+                .on function.. :3
+            */
+            $("form").on('click', 'input#remove-pos', function () {
+
+                $(this).parentsUntil("form").remove();
+
+            });
+
+            $("form").on('click', 'select#opt-pos', function () {
+                $val = $(this).val();
+                $(this).parent().attr("id", "meaning-"+$val);
+                $("div#meaning-"+$val+" ul").attr("id", "meaning-"+$val);
+                $("div#meaning-"+$val+" ul#meaning-"+$val+" input").attr("id", "meaning-"+$val);
+            });
 
             $( "form" ).submit(function( event ) {
+                event.preventDefault();
+                
+//TODO Use map
 
-                $word = $("#word").val();
-                $pos = $("#pos").val();
-                $meaning = "";
-                $synonyms = "";
+                 $word = $("#word").val();
+                // $pos = $("#pos").val();
+                 $meaning = "";
+                 $synonyms = "";
+                 $antonyms = "";
 
-                $("ul.meaning li.capsule").each(function() {
+                var arr = {};
+                var data = {};
+                arr["0"]=0;
+                arr["n"]=0;
+                arr["pro"]=0;
+                arr["v"]=0;
+                arr["adv"]=0;
+                arr["adj"]=0;
+                arr["pre"]=0;
+                arr["conj"]=0;
+                arr["i"]=0;
 
-                        if($meaning=="")
-                            $meaning = $(this).text();
+                $flag=0;
+                
+                $( "select#opt-pos.form-control" ).each(function() {
+                    $meaning="";
+                    $posId = $(this).val();
+                    if(arr[$posId]==0)
+                    {
+                        arr[$posId]=1;
+
+                        $("ul#meaning-"+$posId+".meaning li.capsule").each(function() {
+
+                                if($meaning=="")
+                                    $meaning = $(this).text();
+                                else
+                                    $meaning += "; "+$(this).text();
+                        });
+
+                        //console.log($meaning + " " + $posId);
+                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                        if($meaning == "")
+                        {
+                            showInfo("ত্রুটি!", "কোনো অর্থ পাওয়া যায়নি! প্রতিটি অর্থ লিখার পর অবশ্যই একটি করে সেমি-কোলোন (\";\") দিতে হবে।");
+                            $flag=1;
+                            ///console.log("1111");
+                            return false;
+                        }
                         else
-                            $meaning += "; "+$(this).text();
+                        {
+                            data[$posId]=$meaning;
+                            ///console.log(Object.keys(data).length);
+                        }
+                    }
+                    else
+                    {
+                        showInfo("ত্রুটি!","একই পদ প্রকরণ একাধিক! এটি মুছুন বা পরিবর্তন করুন।");
+                        ///console.log("2222");
+                        $flag=1;
+                        return false; // its work like "break" in loop
+                    }
                 });
 
-                if($meaning == "")
+                if($flag==1)
                 {
-                    showInfo("ত্রুটি!", "কোনো অর্থ পাওয়া যায়নি! প্রতিটি অর্থ লিখার পর অবশ্যই একটি করে সেমি-কোলোন (\";\") দিতে হবে।");
+                    //console.log("3333");
                     return false;
+                }
+
+                // traverse object data arbitarily
+                for (var value in data) {
+                    console.log(data[value]);
                 }
 
                 $("ul.synonyms li.capsule").each(function() {
@@ -244,26 +401,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $synonyms += "; "+$(this).text();
                 });
 
-                //alert($meaning);
+                console.log($synonyms);
+
+                $("ul.antonyms li.capsule").each(function() {
+
+                        if($antonyms=="")
+                            $antonyms = $(this).text();
+                        else
+                            $antonyms += "; "+$(this).text();
+                });
+
+                console.log($antonyms);
 
                 $options = {
                     word: $word,
-                    pos: $pos,
-                    meaning: $meaning,
-                    synonyms: $synonyms
+                    meaning: data,
+                    synonyms: $synonyms,
+                    antonyms: $antonyms
                 };
 
                 //TODO
-                // - Check if the word already in db or not
-                $.post("addentry.php", $options, function(data){
+                $.post("addentry.php", $options, function(result){
 
-                    $obj = jQuery.parseJSON(data);
+                    //$obj = jQuery.parseJSON(data);
 
-                    showInfo($obj.title, $obj.message);
+                    //showInfo($obj.title, $obj.message);
+                    console.log(result);
                     
                 });
 
-                event.preventDefault();
+                
             });
 
 
@@ -279,55 +446,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="container">
 
-    <div class="form-group">
-        <label for="item_index">Select which alphabet you like most</label>
-        <select id="item_index" name="item_index" class="form-control dropdown">
-        <?php
-        for($i=0;$i<26;$i++)
-        {
-            echo '<option value="'.chr(97+$i).'">'.chr(65+$i).'</option>';
-            
-        }
-        ?>
-        </select>
-    </div>
-
     <?php
-
-/*
-CHANGE LOG
-----------------------------------------
-Version 0.0
-- 
-*/
-
 
 function displayNewEntryForm()
 {
-  echo '<form class="form-box-lg" role="form" action="'.htmlspecialchars($_SERVER["PHP_SELF"]).'" method="post">
+  echo '<form class="form-box-lg" role="form" action="" method="post">
   <div class="form-group">
      <label for="word">শব্দ / শব্দ গুচ্ছ <span class="text-danger">(আবশ্যক)</span></label>
      <input type="text" pattern="[A-Za-z0-9-\' ]{1,50}" name="word" class="form-control" id="word" placeholder="ইংরেজি শব্দ অথবা শব্দ-গুচ্ছ এখানে লিখুন" required>
      <div class="item_info"></div>
+     <input class="btn btn-primary skip" type="button" id="0" value="এটা বাদ দিন">
  </div>
 
- <div class="form-group">
+<!-- <div class="form-group">
   <label for="pos">পদপ্রকরণ</label>
   <input type="text" pattern="[A-Za-z,-/ ]{1,25}" name="pos" class="form-control" id="pos" placeholder="পদ এখানে লিখুন
 ">
 <span class="help-block alert alert-warning">পদ প্রকরণ সমূহের সংক্ষিপ্ত রূপ লিখুন। যেমনঃ <strong>n</strong> (noun), <strong>pro</strong> (pronoun), <strong>v</strong> (verb), <strong>adv</strong> (adverb), <strong>adj</strong> (adjective),  <strong>pre</strong> (preposition), <strong>conj</strong> (conjunction) ইত্যাদি।</span>
 </div>
+-->
 
-<div class="form-group">
-    <label for="meaning">বাংলা অর্থ <span class="text-danger">(আবশ্যক)</span></label>
-    <ul class="form-control meaning inline capsule-ul">
+<span class="help-block alert alert-warning">প্রতিটি অর্থ লিখার পর <strong>অবশ্যই</strong> একটি করে <strong>সেমি-কোলোন (";")</strong> দিতে হবে।</span>
+
+<!-- meaning start -->
+
+<div class="form-group meaning" id="meaning-0">
+    <label for="pos">পদপ্রকরণ</label>
+    <select class="form-control" id="opt-pos">
+        <option value="0" selected="selected">Not defined</option>
+        <option value="n">Noun</option>
+        <option value="pro">Pronoun</option>
+        <option value="v">Verb</option>
+        <option value="adv">Adverb</option>
+        <option value="adj">Adjective</option>
+        <option value="pre">Preposition</option>
+        <option value="conj">Conjunction</option>
+        <option value="i">Phrase/Idioms</option>
+    </select> 
+    <label for="meaning">বাংলা অর্থ</label>
+    <ul class="form-control meaning inline capsule-ul" id="meaning-0">
         <li class="meaning-li">
-        <input type="text" name="meaning" class="no-design capsule" id="meaning">
+        <input type="text" name="meaning" class="no-design capsule" id="meaning-0">
         
         </li>
     </ul>
-    <span class="help-block alert alert-warning">প্রতিটি অর্থ লিখার পর <strong>অবশ্যই</strong> একটি করে <strong>সেমি-কোলোন (";")</strong> দিতে হবে।</span>
 </div>
+
+<input class="btn btn-primary add-pos" type="button" id="0" value="আরেকটি পদপ্রকরণ যুক্ত করুন">
+
+<!-- meaning end -->
+
 
 
 <div class="form-group">
@@ -339,6 +507,17 @@ function displayNewEntryForm()
     </ul>
    <span class="help-block alert alert-warning">
 প্রতিটি সমার্থক শব্দ লিখার পর <strong>অবশ্যই</strong> একটি করে <strong>সেমি-কোলোন (";")</strong> দিতে হবে।</span>
+</div>
+
+<div class="form-group">
+   <label for="antonyms">বিপরীতার্থক শব্দ</label>
+   <ul class="form-control antonyms inline capsule-ul">
+        <li class="antonyms-li">
+        <input type="text" name="antonyms" pattern="[A-Za-z;,\' -/]{1,1000}" class="no-design capsule" id="antonyms">
+        </li>
+    </ul>
+   <span class="help-block alert alert-warning">
+প্রতিটি বিপরীতার্থক শব্দ লিখার পর <strong>অবশ্যই</strong> একটি করে <strong>সেমি-কোলোন (";")</strong> দিতে হবে।</span>
 </div>
 
 

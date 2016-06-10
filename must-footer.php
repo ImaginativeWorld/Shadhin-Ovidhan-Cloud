@@ -10,7 +10,7 @@
 					<?php echo date("Y"); ?> <a  data-toggle="tooltip" title="Be imaginative" target="_blank" href="http://imaginativeworld.org/">ইমাজিনেটিভ ওয়ার্ল্ড</a>। সর্বসত্ব সংরক্ষিত।</p>
 				<p>হোস্টিং সহায়তা <a href="http://service.luckyfm.info/" target="_blank">ধ্রুবক অল রাউন্ডার</a>।</p>
 				<hr>
-				<p class="small">Module version 0.0.160608 alpha</p>
+				<p class="small">Module version 0.0.160611 alpha</p>
 				
 				</div>
 

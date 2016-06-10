@@ -23,7 +23,10 @@ Thanks in advance.
 
 ******************************
 Build Version: 0.1
-Build Date: __ May 2016
+Build Date: __ ___ 2016
+******************************
+Github: https://github.com/ImaginativeWorld/Shadhin-Ovidhan-Cloud/
+License: MPL 2.0
 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
