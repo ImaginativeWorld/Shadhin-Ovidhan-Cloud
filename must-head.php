@@ -45,7 +45,6 @@ License: MPL 2.0
 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-
 <script src="https://use.fontawesome.com/7d3e0452bd.js"></script>
 
 <!-- <script src="_js/jquery-1.12.4.js"></script>

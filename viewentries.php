@@ -118,7 +118,7 @@
                     $now = "সমার্থক শব্দ";
                 }
 
-
+                // NOTE: Chrome Android: keypress return always zero. so need alternative solution. 
                 if(code == 186 || code == 59) { //";" keycode
                     $val = $("input#"+$_now_element).val();
                     if($val!="") {

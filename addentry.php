@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     function addNewEntry(){
 
         $userId =  $_COOKIE[$GLOBALS['c_id']];
-        $infO = "OnlineEntry";  
+        //$infO = "OnlineEntry";  
         $proN =validateInput(isset($_POST['word']) ? $_POST['word'] : '');
         $worD = clean($proN);
         //$poS =validateInput( isset($_POST['pos']) ? $_POST['pos'] : '');
@@ -21,65 +21,116 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $synonymS =validateInput( isset($_POST['synonyms']) ? $_POST['synonyms'] : '');
         $antonymS =validateInput( isset($_POST['antonyms']) ? $_POST['antonyms'] : '');
 
-
-        echo $proN,"\n";
-        echo $worD,"\n";
-
-        echo var_dump($meaninG),"\n";
-
-        echo $synonymS,"\n";
-        echo $antonymS;
-
-//         $db = new db_util();
-
-//         //check if the value already exist or not
-//         $sql = "SELECT * FROM ovidhan WHERE word= '$worD'";
-//         $result = $db->query($sql);
-
-//         if($result->num_rows == 0)
-//         {
-//             $stmt = $db->prepare("INSERT INTO ovidhan(info,word,pron,pos,meaning,synonyms, creator_id )
-//                 VALUES(?,?,?,?,?,?,?)");
-
-//             $stmt->bind_param("ssssssi", $_infO, $_worD, $_proN, $_poS, $_meaninG, $_synonymS, $_userId);
-
-//             $_infO = $infO;
-//             $_worD = $worD;
-//             $_proN = $proN;
-//             $_poS = $poS;
-//             $_meaninG = $meaninG;
-//             $_synonymS = $synonymS;
-//             $_userId = $userId;
-
-//             $result = $stmt->execute();
-
-//             if($result===true)
-//             {
-
-//                 $GLOBALS['_title'] = "সফল!";
-//                 $GLOBALS['_message'] = 'নতুন অন্তর্ভুক্তি "'.$proN.'" সফলভাবে যুক্ত হয়েছে! :)';
-                
-//             }
-//             else
-//             {
-
-// //             displayNewEntryForm();
-
-//                 $GLOBALS['_title'] = "ত্রুটি!";
-//                 $GLOBALS['_message'] = 'অন্তর্ভুক্তি যুক্ত করা যায়নি! :(';
-//             }       
-
-//             $stmt->close();
+        if($meaninG===NULL)
+        {
+            echo 0;
+            exit();
+        }
 
 
-//         }
-//         else
-//         {
+        // echo $proN,"\n";
+        // echo $worD,"\n";
 
-//             $GLOBALS['_title'] = "সতর্ক হোন!";
-//             $GLOBALS['_message'] = 'শব্দ/শব্দ-গুচ্ছ "'.$proN.'" ডেটাবেজে ইতিমধ্যে যুক্ত করা আছে! :/';
+        // echo gettype ($meaninG),"\n";
 
-//         }
+        // echo $synonymS,"\n";
+        // echo $antonymS;
+
+        $db = new db_util();
+
+        //check if the value already exist or not
+        $sql = "SELECT * FROM o_collaboration_en_bn WHERE item= '$worD'";
+        $result = $db->query($sql);
+
+        if($result->num_rows == 0)
+        {
+            // Meaning part
+            $stmt = $db->prepare("INSERT INTO o_collaboration_en_bn(item, pron, pos, meaning, creator_id, revision)
+                VALUES(?,?,?,?,?,?)");
+
+            $stmt->bind_param("ssssii", $_worD, $_proN, $_poS, $_meaninG, $_userId, $_revision);
+
+            $_worD = $worD;
+            $_proN = $proN;
+            $_userId = $userId;
+            $_revision = 0;
+
+            foreach ($meaninG as $key => $value) {
+                $_poS = $key;
+                $_meaninG = $value;
+
+                if($stmt->execute()===false)
+                {
+                    echo 0;
+                    exit();
+                }
+            }
+
+            $stmt->close();
+
+            // Synonyms part
+            $stmt = $db->prepare("INSERT INTO o_collaboration_syno_anto(item, synonyms, antonyms, creator_id, revision)
+                VALUES(?,?,?,?,?)");
+
+            $stmt->bind_param("sssii", $_worD, $_synonymS, $_antonymS, $_userId, $_revision);
+
+            $_worD = $worD;
+            $_userId = $userId;
+            $_synonymS = $synonymS; 
+            $_antonymS = $antonymS;
+            $_revision = 0;
+
+            if($stmt->execute()===false)
+            {
+                echo 0;
+                exit();
+            }
+
+
+            $stmt->close();
+
+            // add to word list
+            $stmt = $db->prepare("INSERT INTO item_list_en(item)
+                VALUES(?)");
+
+            $stmt->bind_param("s", $_proN);
+
+            $_proN = $proN;
+
+            if($stmt->execute()===false)
+            {
+                echo 0;
+                exit();
+            }
+
+            $stmt->close();
+
+            // delete from new word list
+            $stmt = $db->prepare("DELETE FROM item_list_en_new WHERE item = ?");
+
+            $stmt->bind_param("s", $_proN);
+
+            $_proN = $proN;
+
+            if($stmt->execute()===false)
+            {
+                echo 0;
+                exit();
+            }
+
+            $stmt->close();
+            
+
+            $GLOBALS['_title'] = "সফল!";
+            $GLOBALS['_message'] = 'নতুন অন্তর্ভুক্তি "'.$proN.'" সফলভাবে যুক্ত হয়েছে! :)';
+        }
+        else
+        {
+
+            $GLOBALS['_title'] = "সতর্ক হোন!";
+            $GLOBALS['_message'] = 'শব্দ/শব্দ-গুচ্ছ "'.$proN.'" ডেটাবেজে ইতিমধ্যে যুক্ত করা আছে! :/';
+
+        }
 
 
     }
@@ -93,12 +144,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         include 'kickout.php';
     }
 
-    // $data = array(
-    //             "title" => $_title,
-    //             "message" => $_message
-    //         );
+    $data = array(
+                "title" => $_title,
+                "message" => $_message
+            );
 
-    //     echo json_encode($data);
+    echo json_encode($data);
 
     exit();
 
@@ -140,7 +191,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $now = "অর্থ";
                 }
 
-
+                // NOTE: Chrome Android: keypress return always zero. so need alternative solution.
                 if(code == 186 || code == 59) { //";" keycode
                     $val = $targetEle.val();
                     // console.log("val: "+$val);
@@ -238,25 +289,95 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             });
 
             /*
+                Lets reset all ;)
+            */
+            $("input[type=reset]").click(function(){
+                $("li.capsule").tooltip('hide');
+                $("li.capsule").remove();
+            });
+
+            /*
                 Get word
             */
             $("input.skip").click(function(){
 
                 $id = $("input.skip").attr("id");
+				
+				//console.log($id);
 
                 $.post("_util/item_new_get.php", { item_index: $id },  
                     function(result){  
                         //console.log(result);
                         if(result == 0){ 
+
                             console.log("Error input.skip!");
 
                         }else{
+                            //console.log(result);
+                            
                             $obj = jQuery.parseJSON(result);
                             $('#word').val($obj.item);
                             $("input.skip").attr("id", $obj.id);
+
+                            // remove the alert dialog (already in database)
+                            $("div.item_info")
+                                    .text("")
+                                    .removeClass("alert alert-danger");
+									
+							
                         }
                     });  
                 
+            });
+
+            /**
+				Show in Google Translate
+            */
+            /*
+                Get word
+            */
+            $("input.gt-go").click(function(){
+
+
+            		var __word, __id;
+                	$id = $("input.skip").attr("id");
+
+                	for(var k=1;k<=20;k++)
+                	{
+		                $.post("_util/item_new_get.php", { item_index: $id },  
+		                    function(result){  
+		                        //console.log(result);
+		                        if(result == 0){ 
+
+		                            console.log("Error input.skip!");
+
+		                        }else{
+		                            //console.log(result);
+		                            
+		                            $obj = jQuery.parseJSON(result);
+
+		                            //__word = $obj.item;
+		                            //__id = $obj.id;
+		                            //$('#word').val($obj.item);
+		                            //$("input.skip").attr("id", $obj.id);
+		                            //console.log($obj.id);
+									//console.log($obj.item);
+		                            // remove the alert dialog (already in database)
+		                            $("div.item_info")
+		                                    .text("")
+		                                    .removeClass("alert alert-danger");
+		                            var __url = "https://translate.google.com/#en/bn/" + $obj.item;
+		                            window.open(__url, '_blank');
+										
+		                        }
+		                    });
+
+		                $id++;
+                	}
+
+					$('#word').val("");
+                    $("input.skip").attr("id", $id);
+
             });
 
             function get_word()
@@ -310,7 +431,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             });
 
-            $("form").on('click', 'select#opt-pos', function () {
+            $("form").on('click keypress', 'select#opt-pos', function () {
                 $val = $(this).val();
                 $(this).parent().attr("id", "meaning-"+$val);
                 $("div#meaning-"+$val+" ul").attr("id", "meaning-"+$val);
@@ -357,12 +478,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     $meaning += "; "+$(this).text();
                         });
 
-                        //console.log($meaning + " " + $posId);
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                         if($meaning == "")
                         {
-                            showInfo("ত্রুটি!", "কোনো অর্থ পাওয়া যায়নি! প্রতিটি অর্থ লিখার পর অবশ্যই একটি করে সেমি-কোলোন (\";\") দিতে হবে।");
+                            showInfo("ত্রুটি!", "কোনো অর্থ পাওয়া যায়নি! প্রতিটি অর্থ লিখার পর অবশ্যই একটি করে সেমি-কোলোন (\";\") দিতে হবে।");
                             $flag=1;
                             ///console.log("1111");
                             return false;
@@ -389,9 +508,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
 
                 // traverse object data arbitarily
-                for (var value in data) {
-                    console.log(data[value]);
-                }
+                // for (var value in data) {
+                //     console.log(data[value]);
+                // }
 
                 $("ul.synonyms li.capsule").each(function() {
 
@@ -420,13 +539,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     antonyms: $antonyms
                 };
 
-                //TODO
+                // Send data
                 $.post("addentry.php", $options, function(result){
 
-                    //$obj = jQuery.parseJSON(data);
+                    if(result!="0")
+                    {
+                        $obj = jQuery.parseJSON(result);
+                        showInfo($obj.title, $obj.message);
+                    }
+                    else
+                    {
+                        showInfo("ত্রুটি!", "অন্তর্ভুক্তিটি সফলভাবে যুক্ত করা যায়নি! :(");
+                    }
 
-                    //showInfo($obj.title, $obj.message);
-                    console.log(result);
+                    //console.log(result);
                     
                 });
 
@@ -448,14 +574,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <?php
 
+// NOTE: sometimes the dropdown exist the previous value. So the elements id not changed!
+
 function displayNewEntryForm()
 {
   echo '<form class="form-box-lg" role="form" action="" method="post">
   <div class="form-group">
      <label for="word">শব্দ / শব্দ গুচ্ছ <span class="text-danger">(আবশ্যক)</span></label>
-     <input type="text" pattern="[A-Za-z0-9-\' ]{1,50}" name="word" class="form-control" id="word" placeholder="ইংরেজি শব্দ অথবা শব্দ-গুচ্ছ এখানে লিখুন" required>
+     <input type="text" pattern="[A-Za-z0-9-\' ]{1,50}" name="word" class="form-control" id="word" placeholder="ইংরেজি শব্দ অথবা শব্দ-গুচ্ছ এখানে লিখুন" required autofocus>
      <div class="item_info"></div>
      <input class="btn btn-primary skip" type="button" id="0" value="এটা বাদ দিন">
+     <input class="btn btn-primary gt-go" type="button" id="0" value="Google Translate">
  </div>
 
 <!-- <div class="form-group">
@@ -471,7 +600,7 @@ function displayNewEntryForm()
 <!-- meaning start -->
 
 <div class="form-group meaning" id="meaning-0">
-    <label for="pos">পদপ্রকরণ</label>
+    <label for="pos">পদপ্রকরণ <span class="text-danger">(আবশ্যক)</span></label>
     <select class="form-control" id="opt-pos">
         <option value="0" selected="selected">Not defined</option>
         <option value="n">Noun</option>
@@ -483,7 +612,7 @@ function displayNewEntryForm()
         <option value="conj">Conjunction</option>
         <option value="i">Phrase/Idioms</option>
     </select> 
-    <label for="meaning">বাংলা অর্থ</label>
+    <label for="meaning">বাংলা অর্থ <span class="text-danger">(আবশ্যক)</span></label>
     <ul class="form-control meaning inline capsule-ul" id="meaning-0">
         <li class="meaning-li">
         <input type="text" name="meaning" class="no-design capsule" id="meaning-0">

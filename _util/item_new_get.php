@@ -12,21 +12,21 @@
 			$db = new db_util();
 
 		//get the item
-			$item_index = mysql_real_escape_string(isset($_POST['item_index']) ? $_POST['item_index'] : NULL);
+			$item_index = validateInput(isset($_POST['item_index']) ? $_POST['item_index'] : NULL);
 			//$completed_item_id = mysql_real_escape_string(isset($_POST['completed_item_index']) ? $_POST['completed_item_index'] : NULL);
 
 			
 				if($item_index==NULL)
 				{
-					$result = $db->query('SELECT * FROM `item_list_en_new` ORDER BY id ASC LIMIT 1');
+					$result = $db->query('SELECT id, pron FROM `item_list_en_new` LIMIT 1');
 					if($result!==FALSE)
 					{
 						if($result->num_rows>0){
 							$row = $result->fetch_assoc();
 
 							$data = array(
-								"id" => $row["id"],
-								"item" => $row["item"]
+								"id" => 1,
+								"item" => $row["pron"]
 							);
 
         					echo json_encode($data);
@@ -40,15 +40,19 @@
 				}
 				else
 				{
-					$result = $db->query("SELECT * FROM `item_list_en_new` ORDER BY id ASC LIMIT $item_index, 1");
+					// PROBLEM (Solved)
+					// $item_index need to be a real index number like 1,2,3.....
+					// but if you delete a recode from inside, it brake the index number!
+					$result = $db->query("SELECT id, pron FROM `item_list_en_new` LIMIT $item_index, 1");
 					if($result!==FALSE)
 					{
 						if($result->num_rows>0){
 							$row = $result->fetch_assoc();
+							$new_id = intval($item_index)+1;
 
 							$data = array(
-								"id" => $row["id"],
-								"item" => $row["item"]
+								"id" => $new_id,
+								"item" => $row["pron"]
 							);
 
         					echo json_encode($data);

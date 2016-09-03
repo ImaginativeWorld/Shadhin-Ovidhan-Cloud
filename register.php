@@ -1,3 +1,9 @@
+<?php
+
+exit();
+
+?>
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>

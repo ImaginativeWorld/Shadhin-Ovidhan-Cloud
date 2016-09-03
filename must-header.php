@@ -19,19 +19,20 @@
 		<div class="collapse navbar-collapse" id="sowNavbar">
 			<ul class="nav navbar-nav">
 				<li><a href="/socloud">নীড়</a></li>
+				<!-- <li><a href="search.php">অনুসন্ধান</a></li> -->
 
 <?php
 
 include 'func.php';
 
 if(isLoggedIn()!=true) {
-	echo '<li><a href="login.php" >প্রবেশ</a></li>
-<li><a href="register.php" >নিবন্ধন</a></li>';
+	echo '<li><a href="login.php" >প্রবেশ</a></li>';
+//<li><a href="register.php" >নিবন্ধন</a></li>';
 }
 else
 {
-	echo '<li><a href="addentry.php" >যুক্ত</a></li>
-	<li><a href="viewentries.php" >পর্যালোচনা</a></li>';
+	echo '<li><a href="addentry.php" >যুক্ত</a></li>';
+	echo '<li><a href="suggestions.php" >বার্তা</a></li>';
 	echo '</ul>';
 
 	$userDisplayName =  $_COOKIE[$GLOBALS["c_name"]];
